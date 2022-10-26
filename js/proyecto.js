@@ -186,7 +186,7 @@ function createRamp(){
     rampBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1,0,0),-Math.PI/12);
     world.addBody(rampBody);
 
-    const rampMat = new THREE.MeshStandardMaterial({color:0x838383});
+    const rampMat = new THREE.MeshStandardMaterial({color:0x181818});
     const rampGeo = new THREE.BoxGeometry(40,2,180);
     const rampMesh = new THREE.Mesh(rampGeo, rampMat);
     scene.add(rampMesh);
