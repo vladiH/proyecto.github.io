@@ -114,7 +114,7 @@ function createGround(){
     groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1,0,0),-Math.PI/2);
     world.addBody(groundBody);
 
-    const groundTexture = textureLoader.load(path+'./textures/ground.jpg');
+    const groundTexture = textureLoader.load(path+'/textures/ground.jpg');
     groundTexture.wrapS= groundTexture.wrapT = THREE.RepeatWrapping;
     groundTexture.repeat.set(48,48);
     const groundMat = new THREE.MeshStandardMaterial({map:groundTexture, color:"rgb(255,193,69)"});
@@ -162,10 +162,10 @@ function createStadium(){
     world.addBody(stadiumBody);
 
     const statdiumMat = new THREE.MeshStandardMaterial({
-        map:textureLoader.load(path+'./textures/stadium/Color.jpg'),
-        normalMap:textureLoader.load(path+'./textures/stadium/NormalGL.jpg'),
-        aoMap:textureLoader.load(path+'./textures/stadium/NormalDX.jpg'),
-        roughnessMap:textureLoader.load(path+'./textures/stadium/Roughness.jpg'),
+        map:textureLoader.load(path+'/textures/stadium/Color.jpg'),
+        normalMap:textureLoader.load(path+'/textures/stadium/NormalGL.jpg'),
+        aoMap:textureLoader.load(path+'/textures/stadium/NormalDX.jpg'),
+        roughnessMap:textureLoader.load(path+'/textures/stadium/Roughness.jpg'),
         roughness:0.6,
     });
     const stadiumGeo = new THREE.CircleGeometry(20,40);
