@@ -5,7 +5,7 @@ class CharacterControls {
 
     constructor(model,
         mixer, animationsMap,
-        //orbitControl,
+        orbitControl,
         camera,
         currentAction) {
         this.model = model
@@ -26,7 +26,7 @@ class CharacterControls {
         this.cameraTarget = new THREE.Vector3()
         
         this.rotateQuarternion = new THREE.Quaternion()
-        //this.orbitControl = orbitControl
+        this.orbitControl = orbitControl
         this.camera = camera
         this.updateCameraTarget(0,0)
 
@@ -103,7 +103,7 @@ class CharacterControls {
         this.cameraTarget.x = this.model.position.x
         this.cameraTarget.y = this.model.position.y + 1
         this.cameraTarget.z = this.model.position.z
-        //this.orbitControl.target = this.cameraTarget
+        this.orbitControl.target = this.cameraTarget
     }
 
     directionOffset(keysPressed) {

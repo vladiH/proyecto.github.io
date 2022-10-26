@@ -9,7 +9,7 @@ import CannonDebugger from '../lib/cannon-es-debugger.js';
 import {CharacterControls} from "./character_controls.js";
 
 // Variables estandar
-let renderer, scene, camera, cameraHelper, cannonDebuger;
+let renderer, scene, camera, cameraHelper, cannonDebuger, characterControls;
 let world, groundMaterial, playerBody, characterMesh, soundSpeeder;
 let speed = 0, maxSpeed=1, minSpeed=0, acceleration=0.25, angle = 0;
 let chaseCam, chaseCamPivot; //position1 position2 of chaseCam
@@ -20,7 +20,6 @@ const timeStep = 1/60;
 const textureLoader = new THREE.TextureLoader();
 
 // let cameraControls;
-let obstacle, characterControls, physics;
 const clock = new THREE.Clock();
 
 // CONTROL KEYS
@@ -33,6 +32,7 @@ initSound();
 initChaseCam();
 // initOrbitControls();
 createGround();
+createStadium();
 createPlayer();
 createRamp();
 //loadScene();
@@ -58,7 +58,7 @@ function initScene()
     renderer.setSize(window.innerWidth,window.innerHeight);
     renderer.setClearColor(0x7c7b82);
     document.getElementById('container').appendChild( renderer.domElement );
-    // renderer.autoClear = false;
+    renderer.autoClear = false;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFShadowMap;
 
@@ -101,18 +101,6 @@ function initSound(){
         soundSpeeder.setVolume(0.5);
     });
 }
-function initChaseCam(){
-    chaseCam = new THREE.Object3D();
-    chaseCam.position.set(0,0,0);
-
-
-    chaseCamPivot = new THREE.Object3D();
-    chaseCamPivot.position.set(0,15,-10);
-
-    chaseCam.add(chaseCamPivot);
-
-    scene.add(chaseCam);
-}
 
 function createGround(){
     groundMaterial = new CANNON.Material('groundMaterial');
@@ -129,7 +117,7 @@ function createGround(){
     const groundTexture = textureLoader.load(path+'./textures/ground.jpg');
     groundTexture.wrapS= groundTexture.wrapT = THREE.RepeatWrapping;
     groundTexture.repeat.set(48,48);
-    const groundMat = new THREE.MeshStandardMaterial({color:"rgb(150,150,150)",map:groundTexture});
+    const groundMat = new THREE.MeshStandardMaterial({map:groundTexture, color:"rgb(255,193,69)"});
     const groundGeo = new THREE.BoxGeometry(1000,2,1000);
     const groundMesh = new THREE.Mesh(groundGeo, groundMat);
     scene.add(groundMesh);
@@ -141,14 +129,14 @@ function createPlayer(){
     const playerMaterial = new CANNON.Material('speederMaterial');
     const slipery_ground_cm = new CANNON.ContactMaterial(groundMaterial, playerMaterial, {
         friction: 0.3,
-        restitution: 0.5,
+        restitution: 0.1,
         contactEquationStiffness:1e9, 
         frictionEquationStiffness:1e5,
         contactEquationRelaxation:3,
         frictionEquationRelaxation:3
     });
     world.addContactMaterial(slipery_ground_cm);
-    const playerShape = new CANNON.Box(new CANNON.Vec3(0.5,1,0.5));
+    const playerShape = new CANNON.Box(new CANNON.Vec3(2,2,4));
     playerBody = new CANNON.Body({
         mass:90, shape:playerShape, material:playerMaterial
     });
@@ -156,25 +144,50 @@ function createPlayer(){
     playerBody.fixedRotation = true; //keeps flipping
     playerBody.updateMassProperties(); // if fixedRotation=true
     // playerBody.position.set(0,1,0);
-    playerBody.position = new CANNON.Vec3(0,1,0);
+    playerBody.position = new CANNON.Vec3(0,9,0);
     playerBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0,1,0),-Math.PI/2);
     world.addBody(playerBody);
 
     loadCharacterModel();
 }
 
+function createStadium(){
+    const stadiumShape = new CANNON.Box(new CANNON.Vec3(20,20,2));
+    const stadiumBody = new CANNON.Body({
+        mass:0, shape:stadiumShape, material:groundMaterial
+    });
+    stadiumBody.position = new CANNON.Vec3(0,0.5,0);
+    // rotate stadium on x axis by -Math.py/12 (-15 degrees)
+    stadiumBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1,0,0),-Math.PI/2);
+    world.addBody(stadiumBody);
+
+    const statdiumMat = new THREE.MeshStandardMaterial({
+        map:textureLoader.load(path+'./textures/stadium/Color.jpg'),
+        normalMap:textureLoader.load(path+'./textures/stadium/NormalGL.jpg'),
+        aoMap:textureLoader.load(path+'./textures/stadium/NormalDX.jpg'),
+        roughnessMap:textureLoader.load(path+'./textures/stadium/Roughness.jpg'),
+        roughness:0.6,
+    });
+    const stadiumGeo = new THREE.CircleGeometry(20,40);
+    const stadiumMesh = new THREE.Mesh(stadiumGeo, statdiumMat);
+    scene.add(stadiumMesh);
+    stadiumMesh.position.copy(stadiumBody.position);
+    stadiumMesh.quaternion.copy(stadiumBody.quaternion);
+    stadiumMesh.receiveShadow = true;
+}
+
 function createRamp(){
-    const rampShape = new CANNON.Box(new CANNON.Vec3(5,1,10));
+    const rampShape = new CANNON.Box(new CANNON.Vec3(20,1,90));
     const rampBody = new CANNON.Body({
         mass:0, shape:rampShape, material:groundMaterial
     });
-    rampBody.position = new CANNON.Vec3(0,1,15);
+    rampBody.position = new CANNON.Vec3(0,1,80);
     // rotate ramp on x axis by -Math.py/12 (-15 degrees)
     rampBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1,0,0),-Math.PI/12);
     world.addBody(rampBody);
 
-    const rampMat = new THREE.MeshStandardMaterial({color:0xd3c3a2});
-    const rampGeo = new THREE.BoxGeometry(10,2,20);
+    const rampMat = new THREE.MeshStandardMaterial({color:0x838383});
+    const rampGeo = new THREE.BoxGeometry(40,2,180);
     const rampMesh = new THREE.Mesh(rampGeo, rampMat);
     scene.add(rampMesh);
     rampMesh.position.copy(rampBody.position);
@@ -187,9 +200,9 @@ function lights(){
      const ambient = new THREE.AmbientLight(0x5b5f97);
      scene.add( ambient );
 
-    const direccional = new THREE.DirectionalLight(0xFFFFFF,0.5);
+    const direccional = new THREE.DirectionalLight(0xFFFFFF,0.8);
     direccional.position.set(25,120,25)
-    scene.add(new THREE.DirectionalLightHelper( direccional, 200));
+    // scene.add(new THREE.DirectionalLightHelper( direccional, 200));
     scene.add(direccional);
 
     direccional.castShadow = true;
@@ -203,18 +216,18 @@ function lights(){
     direccional.shadow.camera.left = -d;
     direccional.shadow.camera.right = d;
 
-    const focal1 = createSpotlight( 0xffc145 );
-	const focal2 = createSpotlight( 0xff6b6c );
-	const focal3 = createSpotlight( 0x1f791f);
-    focal1.position.set( 25, 50, 15 );
-	focal2.position.set( 0, 50, -20 );
-	focal3.position.set( - 25, 50, 15 );
-    const focal1Helper = new THREE.SpotLightHelper( focal1, 0.5);
-    const focal2Helper = new THREE.SpotLightHelper( focal2, 0.5 );
-    const focal3Helper = new THREE.SpotLightHelper( focal3, 0.5 );
-    scene.add( focal1Helper );
-    scene.add( focal2Helper );
-    scene.add( focal3Helper );
+    const focal1 = createSpotlight( 0xFF7F00 );
+	const focal2 = createSpotlight( 0x00FF7F);
+	const focal3 = createSpotlight( 0x7F00FF);
+    focal1.position.set( 15, 40, 45 );
+	focal2.position.set( 0, 40, 35 );
+	focal3.position.set( - 15, 40, 45 );
+    // const focal1Helper = new THREE.SpotLightHelper( focal1);
+    // const focal2Helper = new THREE.SpotLightHelper( focal2 );
+    // const focal3Helper = new THREE.SpotLightHelper( focal3 );
+    // scene.add( focal1Helper );
+    // scene.add( focal2Helper );
+    // scene.add( focal3Helper );
     scene.add(focal1);
     scene.add(focal2);
     scene.add(focal3);
@@ -222,15 +235,15 @@ function lights(){
 
 function createSpotlight( color ) {
 
-    const newObj = new THREE.SpotLight( color, 0.5);
+    const newObj = new THREE.SpotLight( color, 1);
     // newObj.shadow.mapSize.width = 1024;  
     // newObj.shadow.mapSize.height = 1024;
     newObj.castShadow = true;
-    newObj.angle = 0.1;
-    newObj.penumbra = 0.3;
+    newObj.angle = 0.3;
+    newObj.penumbra = 0.2;
     newObj.decay = 2;
-    //newObj.distance = 800;
-    newObj.angle= Math.PI/7;
+    newObj.distance = 100;
+    //newObj.angle= Math.PI/7;
     //newObj.shadow.camera.near = 800;
     newObj.shadow.camera.far = 20;
     newObj.shadow.camera.fov = 3;
@@ -240,7 +253,7 @@ function createSpotlight( color ) {
 
 function setCameras(ar){
     camera = new THREE.PerspectiveCamera( 75, ar, 1, 1000);
-    //camera.position.set(0,5,-5);
+    camera.position.set(0,10,0);
     //ayudante de camara
     // cameraHelper = new THREE.CameraHelper(camera);
 }
@@ -263,50 +276,43 @@ function onKeyDown(e){
     switch (e.key) {
         case 'ArrowLeft':
             angle += Math.PI/180;
+            console.log(angle);
+            if (speed>0){
+                playerBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 1, 0),angle)
+            }else{
+                playerBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0),angle);
+            }
             keysPressed['A'] = true;
             break;
         case 'ArrowRight':
             angle -= Math.PI/180;
+            console.log(angle);
+            if (speed>0){
+                playerBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 1, 0),angle)
+            }else{
+                playerBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0),angle);
+            }
             keysPressed['W'] = true;
             break;
         case 'ArrowUp':
             speed += acceleration;
             if (speed>maxSpeed) speed = maxSpeed;
-            if(!soundSpeeder.isPlaying) soundSpeeder.play();
+            // if(!soundSpeeder.isPlaying) soundSpeeder.play();
             keysPressed['D'] = true;
+            playerBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0),angle);
             break;
         case 'ArrowDown':
             speed -= acceleration;
             if(speed<minSpeed) {
                 speed = minSpeed;
-                if(soundSpeeder.isPlaying) soundSpeeder.stop();
+                // if(soundSpeeder.isPlaying) soundSpeeder.stop();
             }
+            playerBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0),angle);
             keysPressed['S'] = true;
             break;
       }
-    playerBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0),angle);
 }
-// function onKeyDown(e){
-//     if (characterControls) {
-//         switch (e.keyCode) {
-//             case 16:
-//                 characterControls.switchRunToggle()
-//                 break;
-//             case 37:
-//                 keysPressed['A'] = true;
-//                 break;
-//             case 38:
-//                 keysPressed['W'] = true;
-//                 break;
-//             case 39:
-//                 keysPressed['D'] = true;
-//                 break;
-//             case 40:
-//                 keysPressed['S'] = true;
-//                 break;
-//           }
-//     }
-// }
+
 
 function onKeyUp(e){
     if (characterControls) {
@@ -353,6 +359,25 @@ function movePlayer(){
         camera.lookAt(characterMesh.position);
     }
 }
+function initChaseCam(){
+    chaseCam = new THREE.Object3D();
+    chaseCam.position.set(0,0,0);
+
+
+    chaseCamPivot = new THREE.Object3D();
+    chaseCamPivot.position.set(0,3,-10);
+
+    chaseCam.add(chaseCamPivot);
+
+    scene.add(chaseCam);
+}
+function updateChaseCam(){
+    chaseCamPivot.getWorldPosition(view); //get position of object in world(x,y,z) 
+    if (view<1) view.y=1;
+
+    //gab beetween chasecam and player
+    camera.position.lerpVectors(camera.position,view,0.3);
+}
 
 function update()
 {   
@@ -367,13 +392,6 @@ function update()
     //cameraControls.update()
 }
 
-function updateChaseCam(){
-    chaseCamPivot.getWorldPosition(view); //get position of object in world(x,y,z) 
-    if (view<1) view.y=1;
-
-    //gab beetween chasecam and player
-    camera.position.lerpVectors(camera.position,view,0.5);
-}
 
 function render()
 {
@@ -385,22 +403,25 @@ function render()
 }
 
 function loadCharacterModel(){
-    new GLTFLoader().load('../models/Soldier.glb', function (gltf) {
+    new GLTFLoader().load('../models/runner.glb', function (gltf) {
         characterMesh = gltf.scene;
         characterMesh.traverse(function (object) {
-            if (object.isMesh) object.castShadow = object.receiveShadow = true;
+            if (object.isMesh){ 
+                object.castShadow = object.receiveShadow = true;
+            }
         });
-        characterMesh.scale.set(0.5,1,0.5)
+        characterMesh.scale.set(1,2,2)
         characterMesh.position.copy(playerBody.position);
         characterMesh.quaternion.copy(playerBody.quaternion);
+        //playerBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), 180*Math.PI/180);
         characterMesh.add(chaseCam);
         scene.add(characterMesh);
-        const gltfAnimations = gltf.animations;
-        const mixer = new THREE.AnimationMixer(characterMesh);
-        const animationsMap = new Map() //Map<string, THREE.AnimationAction>
-        gltfAnimations.filter(a => a.name != 'TPose').forEach((a) => {
-            animationsMap.set(a.name, mixer.clipAction(a))
-        })
+        // const gltfAnimations = gltf.animations;
+        // const mixer = new THREE.AnimationMixer(characterMesh);
+        // const animationsMap = new Map() //Map<string, THREE.AnimationAction>
+        // gltfAnimations.filter(a => a.name != 'TPose').forEach((a) => {
+        //     animationsMap.set(a.name, mixer.clipAction(a))
+        // })
         // characterControls = new CharacterControls(characterMesh, mixer, animationsMap, 
         //     //cameraControls,
         //      camera,  'Idle')
