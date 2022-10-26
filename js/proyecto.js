@@ -276,22 +276,10 @@ function onKeyDown(e){
     switch (e.key) {
         case 'ArrowLeft':
             angle += Math.PI/180;
-            console.log(angle);
-            if (speed>0){
-                playerBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 1, 0),angle)
-            }else{
-                playerBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0),angle);
-            }
             keysPressed['A'] = true;
             break;
         case 'ArrowRight':
             angle -= Math.PI/180;
-            console.log(angle);
-            if (speed>0){
-                playerBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 1, 0),angle)
-            }else{
-                playerBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0),angle);
-            }
             keysPressed['W'] = true;
             break;
         case 'ArrowUp':
@@ -299,7 +287,6 @@ function onKeyDown(e){
             if (speed>maxSpeed) speed = maxSpeed;
             // if(!soundSpeeder.isPlaying) soundSpeeder.play();
             keysPressed['D'] = true;
-            playerBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0),angle);
             break;
         case 'ArrowDown':
             speed -= acceleration;
@@ -307,20 +294,20 @@ function onKeyDown(e){
                 speed = minSpeed;
                 // if(soundSpeeder.isPlaying) soundSpeeder.stop();
             }
-            playerBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0),angle);
             keysPressed['S'] = true;
             break;
       }
+      playerBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0),angle);
 }
 
 
 function onKeyUp(e){
     if (characterControls) {
-        switch (e.keyCode) {
-            case 37:
+        switch (e.key) {
+            case 'ArrowLeft':
                 keysPressed['A'] = false;    
                 break;
-            case 39:
+            case 'ArrowRight':
                 keysPressed['D'] = false;    
                 break;
             case 40:
