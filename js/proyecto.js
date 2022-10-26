@@ -15,7 +15,7 @@ let speed = 0, maxSpeed=1, minSpeed=0, acceleration=0.25, angle = 0;
 let chaseCam, chaseCamPivot; //position1 position2 of chaseCam
 let view = new THREE.Vector3(); //world position
 let  insetWidth, insetHeight;
-const path = '../'
+const path = '../proyecto.github.io'
 const timeStep = 1/60;
 const textureLoader = new THREE.TextureLoader();
 
