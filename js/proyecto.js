@@ -28,7 +28,7 @@ const keysPressed = {  }
 // Acciones
 initScene();
 initWorld();
-initSound();
+//initSound();
 initChaseCam();
 // initOrbitControls();
 createGround();
@@ -89,18 +89,18 @@ function initWorld(){
     });
 }
 
-function initSound(){
-    const listener = new THREE.AudioListener();
-    camera.add(listener);
+// function initSound(){
+//     const listener = new THREE.AudioListener();
+//     camera.add(listener);
 
-    soundSpeeder = new THREE.Audio(listener);
-    const audioLoader = new THREE.AudioLoader();
-    audioLoader.load(path+'sounds/slow.mp3',function(buffer){
-        soundSpeeder.setBuffer(buffer);
-        soundSpeeder.setLoop(true);
-        soundSpeeder.setVolume(0.5);
-    });
-}
+//     soundSpeeder = new THREE.Audio(listener);
+//     const audioLoader = new THREE.AudioLoader();
+//     audioLoader.load(path+'sounds/slow.mp3',function(buffer){
+//         soundSpeeder.setBuffer(buffer);
+//         soundSpeeder.setLoop(true);
+//         soundSpeeder.setVolume(0.5);
+//     });
+// }
 
 function createGround(){
     groundMaterial = new CANNON.Material('groundMaterial');
@@ -390,7 +390,7 @@ function render()
 }
 
 function loadCharacterModel(){
-    new GLTFLoader().load('../models/runner.glb', function (gltf) {
+    new GLTFLoader().load(path+'/models/runner.glb', function (gltf) {
         characterMesh = gltf.scene;
         characterMesh.traverse(function (object) {
             if (object.isMesh){ 
@@ -416,17 +416,17 @@ function loadCharacterModel(){
 }
 
 
-function reset(){
-    angle = 0;
-    speed = 0;
-    if (soundSpeeder.isPlaying) soundSpeeder.stop();
-    playerBody.velocity = new CANNON.Vec3(0,0,0);
-    playerBody.angularVelocity = new CANNON.Vec3(0,0,0);
+// function reset(){
+//     angle = 0;
+//     speed = 0;
+//     if (soundSpeeder.isPlaying) soundSpeeder.stop();
+//     playerBody.velocity = new CANNON.Vec3(0,0,0);
+//     playerBody.angularVelocity = new CANNON.Vec3(0,0,0);
 
-    playerBody.quaternion.set(0,0,0,1);
-    playerMesh.quaternion.copy(playerBody.quaternion);
+//     playerBody.quaternion.set(0,0,0,1);
+//     playerMesh.quaternion.copy(playerBody.quaternion);
 
-    playerBody.position.set(0,3,0);
-    playerBody.position.copy(playerBody.position);
+//     playerBody.position.set(0,3,0);
+//     playerBody.position.copy(playerBody.position);
 
-}
+// }
